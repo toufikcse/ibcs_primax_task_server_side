@@ -1,10 +1,12 @@
 const express = require('express')
 const mongoose = require('mongoose');
+const cors = require('cors');
 const app = express()
 const port = 5000
 
 //middleware
 app.use(express.json());
+app.use(cors());
 
 var xlsx = require('xlsx');
 var workbook = xlsx.readFile('data/employees.xlsx');
@@ -20,6 +22,7 @@ async function main() {
 const Employee = mongoose.model('Employee', {
     month: { type: String },
     day: { type: Number },
+    date: { type: String },
     id: { type: Number },
     employee_name: { type: String },
     department: { type: String },
@@ -31,16 +34,18 @@ const Employee = mongoose.model('Employee', {
 for(let i = 2; i < 8; i++) {
     const month = worksheet[`A${i}`].v;
     const day = worksheet[`B${i}`].v;
-    const id = worksheet[`C${i}`].v;
-    const employee_name = worksheet[`D${i}`].v;
-    const department = worksheet[`E${i}`].v;
-    const first_in_time = worksheet[`F${i}`].v;
-    const last_out_time = worksheet[`G${i}`].v;
-    const hours_of_works = worksheet[`H${i}`].v;
+    const date = worksheet[`C${i}`].v;
+    const id = worksheet[`D${i}`].v;
+    const employee_name = worksheet[`E${i}`].v;
+    const department = worksheet[`F${i}`].v;
+    const first_in_time = worksheet[`G${i}`].v;
+    const last_out_time = worksheet[`H${i}`].v;
+    const hours_of_works = worksheet[`I${i}`].v;
 
     const new_employee = new Employee({
         month: month,
         day: day,
+        date: date,
         id: id,
         employee_name: employee_name,
         department: department,
@@ -58,6 +63,18 @@ for(let i = 2; i < 8; i++) {
         }
     })
 }
+
+app.get("/", async (req, res) => {
+    const result = await Employee.find({});
+    res.send(result);
+})
+
+app.get("/:id", async (req, res) => {
+    const id = req.params.id;
+    console.log("hitting find id", id);
+    const result = await Employee.find({id: `${id}`}).exec();
+    res.send(result);
+})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
