@@ -1,24 +1,34 @@
-const express = require('express');
-var mongoose = require('mongoose');
-const port = 5000;
-const app = express();
+const express = require('express')
+const mongoose = require('mongoose');
+const app = express()
+const port = 5000
 
 //middleware
 app.use(express.json());
 
 var xlsx = require('xlsx');
 var workbook = xlsx.readFile('data/employees.xlsx');
-
-// make a connection 
-mongoose.connect('mongodb://localhost:27017/employee');
-// get reference to database
-var db = mongoose.connection;
-
-db.on('error', console.error.bind(console, 'connection error:'));
-
 let worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
-for(let i = 2; i < 7; i++) {
+main().catch(err => console.log(err));
+
+async function main() {
+  await mongoose.connect('mongodb://localhost:27017/employee');
+  console.log('connection succesfully');
+}
+
+const Employee = mongoose.model('Employee', {
+    month: { type: String },
+    day: { type: Number },
+    id: { type: Number },
+    employee_name: { type: String },
+    department: { type: String },
+    first_in_time: { type: Number },
+    last_out_time: { type: Number },
+    hours_of_works: { type: Number },
+});
+
+for(let i = 2; i < 8; i++) {
     const month = worksheet[`A${i}`].v;
     const day = worksheet[`B${i}`].v;
     const id = worksheet[`C${i}`].v;
@@ -28,7 +38,7 @@ for(let i = 2; i < 7; i++) {
     const last_out_time = worksheet[`G${i}`].v;
     const hours_of_works = worksheet[`H${i}`].v;
 
-    console.log({
+    const new_employee = new Employee({
         month: month,
         day: day,
         id: id,
@@ -39,37 +49,16 @@ for(let i = 2; i < 7; i++) {
         hours_of_works: hours_of_works
     })
 
-
-    db.once('open', function() {
-        console.log("Connection Successful!");
-         
-        // define Schema
-        var EmployeeSchema = mongoose.Schema({
-          month: String,
-          day: Number,
-          id: Number,
-          employee_name: String,
-          department: String,
-          first_in_time: Number,
-          last_out_time: Number,
-          hours_of_works: Number
-        });
-     
-        // compile schema to model
-        var Book = mongoose.model('Book', EmployeeSchema, 'bookstore');
-     
-        // a document instance
-        var book1 = new Book({ name: 'Introduction to Mongoose', price: 10, quantity: 25 });
-     
-        // save model to database
-        book1.save(function (err, book) {
-          if (err) return console.error(err);
-          console.log(book.name + " saved to employeestore collection.");
-        });
-         
-    });
+    new_employee.save(function(err,result){
+        if (err){
+            console.log(err);
+        }
+        else{
+            console.log(result)
+        }
+    })
 }
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`)
+});

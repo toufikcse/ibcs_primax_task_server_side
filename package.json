@@ -1,11 +1,11 @@
 {
-  "name": "icbs_primax",
+  "name": "file_reader",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "start-dev": "nodemone index.js",
+    "start-dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +14,6 @@
   "dependencies": {
     "express": "^4.17.3",
     "mongoose": "^6.2.6",
-    "xlsx": "^0.18.3"
+    "xlsx": "^0.18.4"
   }
 }
